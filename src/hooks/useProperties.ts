@@ -23,7 +23,7 @@ const sampleProperties: Property[] = [
       'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=600&fit=crop',
       'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop',
     ],
-    amenities: ['WiFi', 'Кондиционер', 'Стиральная ма��ина'],
+    amenities: ['WiFi', 'Кондиционер', 'Стиральная машина'],
     address: 'Невский проспект, 100',
     lat: 59.9311,
     lng: 30.3609,
@@ -80,19 +80,29 @@ export function useProperties() {
         // Initialize sample data if needed
         await initializeSampleData();
 
-        // Set up real-time listener
+        // Set up real-time listener with timeout
+        let timeoutId: NodeJS.Timeout;
+
         unsubscribe = subscribeToProperties((updatedProperties) => {
+          clearTimeout(timeoutId);
           setProperties(updatedProperties);
           setLoading(false);
 
-          // If no data after 5 seconds, use fallback
-          setTimeout(() => {
-            if (updatedProperties.length === 0) {
-              console.log('No Firebase data found, using local fallback');
+          // If no data received, set timeout for fallback
+          if (updatedProperties.length === 0) {
+            timeoutId = setTimeout(() => {
+              console.log('No Firebase data found after timeout, using local fallback');
               setProperties(sampleProperties);
-            }
-          }, 5000);
+            }, 3000);
+          }
         });
+
+        // Set initial timeout for fallback
+        timeoutId = setTimeout(() => {
+          console.log('Firebase connection timeout, using local fallback');
+          setProperties(sampleProperties);
+          setLoading(false);
+        }, 3000);
 
       } catch (err) {
         console.error('Error initializing properties:', err);
