@@ -10,28 +10,21 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ isOpen, onClose }: LoginModalProps) {
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
+  const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, signUp, loading, error } = useAuth();
+  const { signIn, loading, error } = useAuth();
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (isLogin) {
-        await signIn(email, password);
-      } else {
-        await signUp(email, password, displayName);
-      }
+      await signIn(login, password);
       onClose();
       // Reset form
-      setEmail('');
+      setLogin('');
       setPassword('');
-      setDisplayName('');
     } catch (err) {
       // Error is handled by the hook
     }
@@ -39,9 +32,8 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
   const handleClose = () => {
     onClose();
-    setEmail('');
+    setLogin('');
     setPassword('');
-    setDisplayName('');
   };
 
   return (
@@ -49,7 +41,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       <Card className="w-full max-w-md bg-white">
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>{isLogin ? 'Вход в систему' : 'Регистрация'}</CardTitle>
+            <CardTitle>Вход в админ-панель</CardTitle>
             <Button variant="ghost" size="sm" onClick={handleClose}>
               <X className="w-4 h-4" />
             </Button>
@@ -57,34 +49,20 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div>
-                <label className="block text-sm font-medium mb-1">Имя</label>
-                <input
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full p-2 border rounded-md"
-                  placeholder="Ваше имя"
-                  required={!isLogin}
-                />
-              </div>
-            )}
-            
             <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
+              <label className="block text-sm font-medium mb-1">Логин</label>
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                value={login}
+                onChange={(e) => setLogin(e.target.value)}
                 className="w-full p-2 border rounded-md"
-                placeholder="your@email.com"
+                placeholder="Введите логин"
                 required
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">Пароль</label>
+              <label className="block text-sm font-medium mb-1">Парол��</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -110,34 +88,22 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
               </div>
             )}
 
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="w-full bg-brand-orange hover:bg-brand-500"
               disabled={loading}
             >
-              {loading ? 'Загрузка...' : (isLogin ? 'Войти' : 'Зарегистрироваться')}
+              {loading ? 'Вход...' : 'Войти'}
             </Button>
           </form>
 
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-brand-orange hover:underline text-sm"
-            >
-              {isLogin ? 'Нет аккаунта? Зарегистрируйтесь' : 'Уже есть аккаунт? Войдите'}
-            </button>
+          <div className="mt-4 p-3 bg-neutral-50 rounded text-sm">
+            <strong>Данные для входа:</strong>
+            <br />
+            Логин: admin
+            <br />
+            Пароль: admin
           </div>
-
-          {isLogin && (
-            <div className="mt-4 p-3 bg-neutral-50 rounded text-sm">
-              <strong>Тестовый аккаунт админа:</strong>
-              <br />
-              Email: admin@spbrent2025.com
-              <br />
-              Пароль: admin123
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
