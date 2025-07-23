@@ -1,4 +1,5 @@
 import { YMaps, Map, Placemark } from '@pbe/react-yandex-maps';
+import { YANDEX_MAPS_CONFIG, MAP_STYLES } from '@/config/yandex';
 
 interface Property {
   id: string;
@@ -16,33 +17,23 @@ interface YandexMapProps {
   height?: string;
 }
 
-const statusColors = {
-  available: '#22c55e',    // Green
-  limited: '#f39c12',      // Orange  
-  booked: '#e74c3c'        // Red
-};
-
 export function YandexMap({ properties, onPropertySelect, height = "400px" }: YandexMapProps) {
   const handlePlacemarkClick = (propertyId: string) => {
     onPropertySelect?.(propertyId);
   };
 
-  // Center map on Saint Petersburg
-  const mapCenter = [59.9311, 30.3609];
-  const mapZoom = 11;
-
   return (
     <div className="w-full rounded-lg overflow-hidden" style={{ height }}>
       <YMaps
         query={{
-          apikey: 'e07b0ca7-5652-436b-b92f-0e83397a5f53',
-          lang: 'ru_RU',
+          apikey: YANDEX_MAPS_CONFIG.apiKey,
+          lang: YANDEX_MAPS_CONFIG.language,
         }}
       >
         <Map
           defaultState={{
-            center: mapCenter,
-            zoom: mapZoom,
+            center: YANDEX_MAPS_CONFIG.defaultCenter,
+            zoom: YANDEX_MAPS_CONFIG.defaultZoom,
           }}
           width="100%"
           height={height}
@@ -57,17 +48,17 @@ export function YandexMap({ properties, onPropertySelect, height = "400px" }: Ya
               properties={{
                 balloonContentHeader: property.title,
                 balloonContentBody: `
-                  <div>
+                  <div style="max-width: 200px;">
                     <p><strong>Цена:</strong> ${property.price.toLocaleString('ru-RU')} ₽/мес</p>
                     <p><strong>Адрес:</strong> ${property.address}</p>
-                    <p><strong>Статус:</strong> ${getStatusText(property.status)}</p>
+                    <p><strong>Статус:</strong> ${MAP_STYLES.statusLabels[property.status]}</p>
                   </div>
                 `,
                 iconCaption: `${property.price.toLocaleString('ru-RU')} ₽`,
               }}
               options={{
                 preset: 'islands#circleIcon',
-                iconColor: statusColors[property.status],
+                iconColor: MAP_STYLES.statusColors[property.status],
                 iconCaptionMaxWidth: '100',
               }}
               onClick={() => handlePlacemarkClick(property.id)}
@@ -77,17 +68,4 @@ export function YandexMap({ properties, onPropertySelect, height = "400px" }: Ya
       </YMaps>
     </div>
   );
-}
-
-function getStatusText(status: string): string {
-  switch (status) {
-    case 'available':
-      return 'Доступно';
-    case 'limited':
-      return 'Ограничено';
-    case 'booked':
-      return 'Забронировано';
-    default:
-      return status;
-  }
 }
