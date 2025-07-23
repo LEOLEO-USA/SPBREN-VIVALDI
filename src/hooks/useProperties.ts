@@ -77,8 +77,15 @@ export function useProperties() {
         setLoading(true);
         setError(null);
 
-        // Initialize sample data if needed
-        await initializeSampleData();
+        // Try to initialize sample data in Firebase
+        try {
+          await initializeSampleData();
+        } catch (firebaseError) {
+          console.log('Firebase initialization failed, using local fallback immediately');
+          setProperties(sampleProperties);
+          setLoading(false);
+          return;
+        }
 
         // Set up real-time listener with timeout
         let timeoutId: NodeJS.Timeout;
@@ -93,7 +100,7 @@ export function useProperties() {
             timeoutId = setTimeout(() => {
               console.log('No Firebase data found after timeout, using local fallback');
               setProperties(sampleProperties);
-            }, 3000);
+            }, 2000);
           }
         });
 
@@ -102,7 +109,7 @@ export function useProperties() {
           console.log('Firebase connection timeout, using local fallback');
           setProperties(sampleProperties);
           setLoading(false);
-        }, 3000);
+        }, 2000);
 
       } catch (err) {
         console.error('Error initializing properties:', err);
