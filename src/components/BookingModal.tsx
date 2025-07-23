@@ -1,13 +1,9 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X } from "lucide-react";
-
-interface Property {
-  id: string;
-  title: string;
-  price: number;
-  images: string[];
-}
+import { useBookings } from "@/hooks/useBookings";
+import { Property } from "@/types";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -16,7 +12,48 @@ interface BookingModalProps {
 }
 
 export function BookingModal({ isOpen, onClose, property }: BookingModalProps) {
+  const [guestName, setGuestName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { createBooking } = useBookings();
+
   if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      await createBooking({
+        propertyId: property.id,
+        guestName,
+        email,
+        phone,
+        checkIn,
+        checkOut,
+        status: 'pending',
+        totalPrice: property.price,
+      });
+
+      // Reset form
+      setGuestName("");
+      setEmail("");
+      setPhone("");
+      setCheckIn("");
+      setCheckOut("");
+
+      onClose();
+      alert("Заявка на бронирование отправлена!");
+    } catch (error) {
+      console.error("Booking error:", error);
+      alert("Ошибка при отправке заявки");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -41,41 +78,76 @@ export function BookingModal({ isOpen, onClose, property }: BookingModalProps) {
             </p>
           </div>
 
-          <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">Имя</label>
               <input
                 type="text"
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
                 className="w-full p-2 border rounded-md"
                 placeholder="Ваше имя"
+                required
               />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Email</label>
               <input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full p-2 border rounded-md"
                 placeholder="email@example.com"
+                required
               />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Телефон</label>
               <input
                 type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 className="w-full p-2 border rounded-md"
                 placeholder="+7 (999) 123-45-67"
+                required
               />
             </div>
-          </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">Заезд</label>
+                <input
+                  type="date"
+                  value={checkIn}
+                  onChange={(e) => setCheckIn(e.target.value)}
+                  className="w-full p-2 border rounded-md"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Выезд</label>
+                <input
+                  type="date"
+                  value={checkOut}
+                  onChange={(e) => setCheckOut(e.target.value)}
+                  className="w-full p-2 border rounded-md"
+                  required
+                />
+              </div>
+            </div>
 
-          <div className="flex gap-3 mt-6">
-            <Button variant="outline" className="flex-1" onClick={onClose}>
-              Отмена
-            </Button>
-            <Button className="flex-1 bg-brand-orange hover:bg-brand-500">
-              Отправить заявку
-            </Button>
-          </div>
+            <div className="flex gap-3 mt-6">
+              <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
+                Отмена
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 bg-brand-orange hover:bg-brand-500"
+                disabled={loading}
+              >
+                {loading ? "Отправляем..." : "Отправить заявку"}
+              </Button>
+            </div>
+          </form>
         </div>
       </Card>
     </div>
