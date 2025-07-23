@@ -13,7 +13,7 @@ import { useProperties } from "@/hooks/useProperties";
 import { useStatistics } from "@/hooks/useStatistics";
 
 const Index = () => {
-  const { properties } = useProperties();
+  const { properties, loading: propertiesLoading, error: propertiesError } = useProperties();
   const { statistics } = useStatistics();
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(
     null,
@@ -79,25 +79,43 @@ const Index = () => {
           </div>
 
           <div className="lg:col-span-8">
-            <div className="space-y-8">
-              {properties.map((property) => (
-                <div
-                  key={property.id}
-                  id={`property-${property.id}`}
-                  className={
-                    selectedPropertyId === property.id
-                      ? "ring-2 ring-brand-orange ring-opacity-50 rounded-lg"
-                      : ""
-                  }
-                >
-                  <PropertyCard
-                    {...property}
-                    onViewDetails={handleViewDetails}
-                    onCheckAvailability={handleCheckAvailability}
-                  />
+            {propertiesError && (
+              <div className="text-center py-8">
+                <div className="text-red-600 mb-4">
+                  ❌ Ошибка загрузки данных: {propertiesError}
                 </div>
-              ))}
-            </div>
+                <div className="text-sm text-neutral-500">
+                  Возможно, требуется настройка правил безопасности Firebase Firestore
+                </div>
+              </div>
+            )}
+
+            {propertiesLoading ? (
+              <div className="text-center py-12">
+                <div className="text-2xl mb-4">🔄</div>
+                <div className="text-neutral-600">Загрузка данных из Firebase...</div>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {properties.map((property) => (
+                  <div
+                    key={property.id}
+                    id={`property-${property.id}`}
+                    className={
+                      selectedPropertyId === property.id
+                        ? "ring-2 ring-brand-orange ring-opacity-50 rounded-lg"
+                        : ""
+                    }
+                  >
+                    <PropertyCard
+                      {...property}
+                      onViewDetails={handleViewDetails}
+                      onCheckAvailability={handleCheckAvailability}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="mt-12 text-center">
               <div className="inline-flex items-center gap-4 bg-white rounded-lg px-6 py-4 shadow-sm border border-neutral-200">
