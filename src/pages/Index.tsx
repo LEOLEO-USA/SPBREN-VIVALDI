@@ -9,6 +9,7 @@ import { MapSidebar } from "@/components/MapSidebar";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { BookingModal } from "@/components/BookingModal";
+import { FirebaseStatus } from "@/components/FirebaseStatus";
 import { useProperties } from "@/hooks/useProperties";
 import { useStatistics } from "@/hooks/useStatistics";
 
@@ -69,6 +70,8 @@ const Index = () => {
             доступности в реальном времени.
           </p>
         </div>
+
+        <FirebaseStatus />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-4">
