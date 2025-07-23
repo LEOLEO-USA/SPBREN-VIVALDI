@@ -1,13 +1,4 @@
 import { useState, useEffect } from 'react';
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  User as FirebaseUser,
-  updateProfile,
-} from 'firebase/auth';
-import { auth } from '@/config/firebase';
 
 interface AuthUser {
   uid: string;
@@ -16,36 +7,54 @@ interface AuthUser {
   role?: string;
 }
 
+// Simple admin credentials
+const ADMIN_CREDENTIALS = {
+  login: 'admin',
+  password: 'admin'
+};
+
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
-      if (firebaseUser) {
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
-        });
-      } else {
-        setUser(null);
+    // Check if user is already logged in (from localStorage)
+    const savedUser = localStorage.getItem('auth-user');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch {
+        localStorage.removeItem('auth-user');
       }
-      setLoading(false);
-    });
-
-    return unsubscribe;
+    }
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (login: string, password: string) => {
     try {
       setError(null);
       setLoading(true);
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return userCredential.user;
+      
+      // Simple credential check
+      if (login === ADMIN_CREDENTIALS.login && password === ADMIN_CREDENTIALS.password) {
+        const adminUser: AuthUser = {
+          uid: 'admin-001',
+          email: 'admin@spbrent.local',
+          displayName: 'Администратор',
+          role: 'admin'
+        };
+        
+        setUser(adminUser);
+        localStorage.setItem('auth-user', JSON.stringify(adminUser));
+        return adminUser;
+      } else {
+        throw new Error('invalid-credentials');
+      }
     } catch (err: any) {
-      setError(getErrorMessage(err.code));
+      const errorMessage = err.message === 'invalid-credentials' 
+        ? 'Неверный логин или пароль' 
+        : 'Ошибка входа в систему';
+      setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);
@@ -53,37 +62,24 @@ export function useAuth() {
   };
 
   const signUp = async (email: string, password: string, displayName?: string) => {
-    try {
-      setError(null);
-      setLoading(true);
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      if (displayName && userCredential.user) {
-        await updateProfile(userCredential.user, { displayName });
-      }
-      
-      return userCredential.user;
-    } catch (err: any) {
-      setError(getErrorMessage(err.code));
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+    // For demo purposes, signUp is disabled
+    setError('Регистрация отключена. Используйте admin/admin');
+    throw new Error('Registration disabled');
   };
 
   const logout = async () => {
     try {
       setError(null);
-      await signOut(auth);
+      setUser(null);
+      localStorage.removeItem('auth-user');
     } catch (err: any) {
-      setError(getErrorMessage(err.code));
+      setError('Ошибка выхода');
       throw err;
     }
   };
 
   const isAdmin = () => {
-    // Simple admin check - in real app, this would check against Firestore
-    return user?.email === 'admin@spbrent2025.com';
+    return user?.role === 'admin';
   };
 
   return {
@@ -95,23 +91,4 @@ export function useAuth() {
     logout,
     isAdmin,
   };
-}
-
-function getErrorMessage(errorCode: string): string {
-  switch (errorCode) {
-    case 'auth/user-not-found':
-      return 'Пользователь не найден';
-    case 'auth/wrong-password':
-      return 'Неверный пароль';
-    case 'auth/email-already-in-use':
-      return 'Email уже используется';
-    case 'auth/weak-password':
-      return 'Слишком слабый пароль';
-    case 'auth/invalid-email':
-      return 'Неверный email';
-    case 'auth/too-many-requests':
-      return 'Слишком много попыток. Попробуйте позже';
-    default:
-      return 'Произошла ошибка аутентификации';
-  }
 }
