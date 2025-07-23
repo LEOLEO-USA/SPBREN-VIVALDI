@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -9,9 +10,12 @@ import {
   Menu,
   Shield,
   LogOut,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { LoginModal } from "./LoginModal";
 
 interface NavItem {
   label: string;
@@ -46,16 +50,25 @@ const navItems: NavItem[] = [
 export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout, isAdmin } = useAuth();
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const isAdminPage = location.pathname === "/admin";
 
-  const handleLogout = () => {
-    localStorage.removeItem("apartment-rental-auth");
-    navigate("/");
-    window.location.reload();
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   const handleAdminClick = () => {
-    navigate("/admin");
+    if (user && isAdmin()) {
+      navigate("/admin");
+    } else {
+      setIsLoginModalOpen(true);
+    }
   };
 
   const handleNavClick = (href: string) => {
@@ -104,25 +117,42 @@ export function Header() {
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-white"
-                onClick={handleAdminClick}
-              >
-                <Shield className="w-4 h-4 mr-2" />
-                Админ
-              </Button>
-
-              {isAdminPage && (
+              {user ? (
+                <>
+                  <div className="flex items-center gap-2 text-sm text-neutral-600">
+                    <User className="w-4 h-4" />
+                    {user.displayName || user.email}
+                  </div>
+                  {isAdmin() && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-white"
+                      onClick={handleAdminClick}
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      Админ
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-red-500 text-red-600 hover:bg-red-500 hover:text-white"
+                    onClick={handleLogout}
+                    title="Выйти"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </>
+              ) : (
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-red-500 text-red-600 hover:bg-red-500 hover:text-white"
-                  onClick={handleLogout}
-                  title="Выйти из админ-панели"
+                  className="border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-white"
+                  onClick={() => setIsLoginModalOpen(true)}
                 >
-                  <LogOut className="w-4 h-4" />
+                  <User className="w-4 h-4 mr-2" />
+                  Вход
                 </Button>
               )}
             </div>
@@ -158,6 +188,11 @@ export function Header() {
           </div>
         </div>
       </div>
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </header>
   );
 }
