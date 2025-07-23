@@ -165,13 +165,40 @@ export const subscribeToBookings = (
   return unsubscribe;
 };
 
+// Test Firebase connection
+export const testFirebaseConnection = async (): Promise<boolean> => {
+  try {
+    // Try to read from a test collection
+    await getDocs(collection(db, 'test'));
+    return true;
+  } catch (error: any) {
+    console.log('Firebase connection test failed:', error?.message);
+    if (error?.code === 'permission-denied') {
+      console.log('⚠️  Firestore rules need to be updated for public access');
+    }
+    return false;
+  }
+};
+
 // Utility function to initialize sample data
 export const initializeSampleData = async () => {
   try {
+    console.log('🔥 Testing Firebase connection...');
+
+    // Test connection first
+    const isConnected = await testFirebaseConnection();
+    if (!isConnected) {
+      console.log('❌ Firebase connection failed, using local data');
+      throw new Error('Firebase connection failed');
+    }
+
+    console.log('✅ Firebase connected successfully');
+
     // Check if data already exists
     const propertiesSnapshot = await getDocs(collection(db, PROPERTIES_COLLECTION));
-    
+
     if (propertiesSnapshot.empty) {
+      console.log('📝 Adding sample properties to Firestore...');
       // Add sample properties
       const sampleProperties = [
         {
@@ -225,12 +252,38 @@ export const initializeSampleData = async () => {
       ];
 
       for (const property of sampleProperties) {
-        await addProperty(property);
+        const id = await addProperty(property);
+        if (id) {
+          console.log(`✅ Added property: ${property.title}`);
+        } else {
+          console.log(`❌ Failed to add property: ${property.title}`);
+        }
       }
 
-      console.log('Sample properties added to Firebase');
+      console.log('🎉 Sample properties added to Firebase');
+    } else {
+      console.log('📋 Properties already exist in Firestore:', propertiesSnapshot.size);
     }
-  } catch (error) {
-    console.error('Error initializing sample data:', error);
+  } catch (error: any) {
+    console.error('❌ Error initializing sample data:', error?.message || error);
+
+    if (error?.code === 'permission-denied') {
+      console.log(`
+🔧 To fix Firestore permissions, go to:
+https://console.firebase.google.com/project/spbrent2025/firestore/rules
+
+And add these rules:
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+      `);
+    }
+
+    throw error;
   }
 };
