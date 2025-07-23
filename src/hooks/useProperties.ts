@@ -23,7 +23,7 @@ const sampleProperties: Property[] = [
       'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=600&fit=crop',
       'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop',
     ],
-    amenities: ['WiFi', 'Кондиционер', 'Стиральная машина'],
+    amenities: ['WiFi', 'Кондиционе��', 'Стиральная машина'],
     address: 'Невский проспект, 100',
     lat: 59.9311,
     lng: 30.3609,
@@ -79,9 +79,12 @@ export function useProperties() {
 
         // Try to initialize sample data in Firebase
         try {
+          console.log('🚀 Initializing Firebase data...');
           await initializeSampleData();
-        } catch (firebaseError) {
-          console.log('Firebase initialization failed, using local fallback immediately');
+        } catch (firebaseError: any) {
+          console.log('❌ Firebase initialization failed:', firebaseError?.message);
+          console.log('🔄 Using local fallback data immediately');
+          setError('Firebase недоступен. Показаны локальные данные.');
           setProperties(sampleProperties);
           setLoading(false);
           return;
@@ -92,24 +95,28 @@ export function useProperties() {
 
         unsubscribe = subscribeToProperties((updatedProperties) => {
           clearTimeout(timeoutId);
+          console.log('📊 Received properties from Firebase:', updatedProperties.length);
           setProperties(updatedProperties);
           setLoading(false);
+          setError(null);
 
           // If no data received, set timeout for fallback
           if (updatedProperties.length === 0) {
             timeoutId = setTimeout(() => {
-              console.log('No Firebase data found after timeout, using local fallback');
+              console.log('⏰ No Firebase data found after timeout, using local fallback');
+              setError('Нет данных в Firebase. Показаны демо-данные.');
               setProperties(sampleProperties);
-            }, 2000);
+            }, 3000);
           }
         });
 
         // Set initial timeout for fallback
         timeoutId = setTimeout(() => {
-          console.log('Firebase connection timeout, using local fallback');
+          console.log('⏱️ Firebase connection timeout, using local fallback');
+          setError('Таймаут подключения к Firebase. Показаны локальные данные.');
           setProperties(sampleProperties);
           setLoading(false);
-        }, 2000);
+        }, 5000);
 
       } catch (err) {
         console.error('Error initializing properties:', err);
