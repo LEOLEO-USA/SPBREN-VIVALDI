@@ -103,6 +103,11 @@ export default function Admin() {
               </Card>
             </div>
 
+            {/* Admin Credentials Management */}
+            <div className="mb-8">
+              <AdminCredentialsManager />
+            </div>
+
             {/* Management Sections */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <Card>
