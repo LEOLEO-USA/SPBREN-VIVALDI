@@ -37,16 +37,18 @@ export function useAuth() {
     try {
       setError(null);
       setLoading(true);
-      
-      // Simple credential check
-      if (login === ADMIN_CREDENTIALS.login && password === ADMIN_CREDENTIALS.password) {
+
+      // Validate credentials with Firebase
+      const isValid = await validateAdminCredentials(login, password);
+
+      if (isValid) {
         const adminUser: AuthUser = {
           uid: 'admin-001',
           email: 'admin@spbrent.local',
           displayName: 'Администратор',
           role: 'admin'
         };
-        
+
         setUser(adminUser);
         localStorage.setItem('auth-user', JSON.stringify(adminUser));
         return adminUser;
@@ -54,8 +56,8 @@ export function useAuth() {
         throw new Error('invalid-credentials');
       }
     } catch (err: any) {
-      const errorMessage = err.message === 'invalid-credentials' 
-        ? 'Неверный логин или пароль' 
+      const errorMessage = err.message === 'invalid-credentials'
+        ? 'Неверный логин или пароль'
         : 'Ошибка входа в систему';
       setError(errorMessage);
       throw err;
