@@ -1,0 +1,57 @@
+EXPORT ПРОЕКТА "ЦЕНТР АРЕНДЫ КВАРТИР"
+=============================================
+
+Полный список файлов для ручной загрузки в GitHub:
+
+КОРНЕВЫЕ ФАЙЛЫ:
+- package.json
+- vite.config.ts  
+- tsconfig.json
+- tsconfig.app.json
+- tsconfig.node.json
+- tailwind.config.ts
+- postcss.config.js
+- components.json
+- index.html
+- README.md
+
+ПАПКА src/:
+src/
+├── components/
+│   ├── ui/ (все UI компоненты)
+│   ├── AdminCredentialsManager.tsx
+│   ├── BookingModal.tsx
+│   ├── FirebaseStatus.tsx
+│   ├── Footer.tsx
+│   ├── Header.tsx
+│   ├── LoginModal.tsx
+│   ├── MapSidebar.tsx
+│   ├── PropertyCard.tsx
+│   └── YandexMap.tsx
+├── config/
+│   ├── firebase.ts
+│   └── yandex.ts
+├── hooks/
+│   ├── useAuth.ts
+│   ├── useBookings.ts
+│   ├── useProperties.ts
+│   └── useStatistics.ts
+├── lib/
+│   ├── adminCredentials.ts
+│   ├── firebase.ts
+│   └── utils.ts
+├── pages/
+│   ├── Admin.tsx
+│   ├── Calendar.tsx
+│   ├── DynamicContent.tsx
+│   ├── Index.tsx
+│   ├── Map.tsx
+│   └── NotFound.tsx
+├── types/
+│   └── index.ts
+├── App.css
+├── App.tsx
+├── index.css
+└── main.tsx
+
+Рабочий URL: https://b606ab14ca7a4dbaa261cecf57bfbed5-d702614747824bb6b484b94c2.fly.dev/
