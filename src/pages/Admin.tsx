@@ -4,15 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useProperties } from "@/hooks/useProperties";
 import { useBookings } from "@/hooks/useBookings";
-import { 
-  Home, 
-  Calendar, 
-  DollarSign, 
-  TrendingUp, 
+import { AdminCredentialsManager } from "@/components/AdminCredentialsManager";
+import {
+  Home,
+  Calendar,
+  DollarSign,
+  TrendingUp,
   Plus,
   Settings,
   BarChart3,
-  MapPin 
+  MapPin
 } from "lucide-react";
 
 export default function Admin() {
@@ -175,7 +176,7 @@ export default function Admin() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Settings className="w-5 h-5" />
-                    Настройки
+                    На��тройки
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
