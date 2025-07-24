@@ -12,6 +12,7 @@ export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [credentials, setCredentials] = useState<AdminCredentials | null>(null);
 
   useEffect(() => {
     // Check if user is already logged in (from localStorage)
@@ -23,6 +24,13 @@ export function useAuth() {
         localStorage.removeItem('auth-user');
       }
     }
+
+    // Subscribe to admin credentials changes
+    const unsubscribe = subscribeToAdminCredentials((creds) => {
+      setCredentials(creds);
+    });
+
+    return unsubscribe;
   }, []);
 
   const signIn = async (login: string, password: string) => {
