@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { validateAdminCredentials, subscribeToAdminCredentials, AdminCredentials } from '../lib/adminCredentials';
 
 interface AuthUser {
   uid: string;
@@ -6,12 +7,6 @@ interface AuthUser {
   displayName: string | null;
   role?: string;
 }
-
-// Simple admin credentials
-const ADMIN_CREDENTIALS = {
-  login: 'admin',
-  password: 'admin'
-};
 
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
